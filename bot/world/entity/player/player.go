@@ -16,4 +16,8 @@ type Player struct {
 	Health         float32 //血量
 	Food           int32   //饱食度
 	FoodSaturation float32 //食物饱和度
+
+	ExperienceBar	float32
+	Level           int32
+	TotalExperience int32
 }

@@ -129,10 +129,37 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		err = handleSoundEffect(c, p)
 	case data.NamedSoundEffect:
 		err = handleNamedSoundEffect(c, p)
+	case data.SetExperience:
+		err = handleSetExperience(c, p)
 	default:
 		// fmt.Printf("ignore pack id %X\n", p.ID)
 	}
 	return
+}
+
+func handleSetExperience(c *Client, p pk.Packet) error  {
+	var (
+		ExperienceBar	pk.Float
+		Level			pk.VarInt
+		TotalExperience pk.VarInt
+	)
+	err := p.Scan(&ExperienceBar, &Level, &TotalExperience)
+	if err != nil {
+		return err
+	}
+
+	c.ExperienceBar = float32(ExperienceBar)
+	c.Level = int32(Level)
+	c.TotalExperience = int32(TotalExperience)
+
+	if c.Events.ExperienceChange != nil {
+		err = c.Events.ExperienceChange()
+		if err != nil {
+			return nil
+		}
+
+	}
+	return nil
 }
 
 func handleSoundEffect(c *Client, p pk.Packet) error {
