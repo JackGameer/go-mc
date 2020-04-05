@@ -100,10 +100,10 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		// handleDeclareRecipesPacket(g, reader)
 	case data.EntityLookAndRelativeMove:
 		err = handleEntityRelativeMove(c, p)
-	case data.EntityHeadLook:
-		err = handleEntityRelativeMove(c, p)
+	//case data.EntityHeadLook:
+	//	err = handleEntityRelativeMove(c, p)
 	case data.EntityRelativeMove:
-		// err = handleEntityRelativeMovePacket(g, reader)
+		err = handleEntityRelativeMove(c, p)
 	case data.KeepAliveClientbound:
 		err = handleKeepAlivePacket(c, p)
 	case data.Entity:
@@ -133,18 +133,18 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		err = handleSetExperience(c, p)
 	case data.SpawnObject:
 		err = handleSpawnObjectPacket(c, p)
-	case data.EntityMetadata:
-		err = handleEntityMetadata(c, p)
+	//case data.EntityMetadata:
+	//	err = handleEntityMetadata(c, p)
 	default:
 		// fmt.Printf("ignore pack id %X\n", p.ID)
 	}
 	return
 }
 
-func handleSetExperience(c *Client, p pk.Packet) error  {
+func handleSetExperience(c *Client, p pk.Packet) error {
 	var (
-		ExperienceBar	pk.Float
-		Level			pk.VarInt
+		ExperienceBar   pk.Float
+		Level           pk.VarInt
 		TotalExperience pk.VarInt
 	)
 	err := p.Scan(&ExperienceBar, &Level, &TotalExperience)
@@ -676,16 +676,4 @@ func handleEntityRelativeMove(c *Client, p pk.Packet) error {
 		return err
 	}
 	return c.Events.EntityRelativeMove(int(EntityID), int(DeltaX), int(DeltaY), int(DeltaZ))
-}
-
-func handleEntityMetadata(c *Client, p pk.Packet) error {
-	if c.Events.Test == nil {
-		return nil
-	}
-	var EntityID pk.VarInt
-	p.Scan(&EntityID)
-	if EntityID != 102 {
-		return nil
-	}
-	return c.Events.Test(int(EntityID))
 }
