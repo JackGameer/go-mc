@@ -17,10 +17,10 @@ type eventBroker struct {
 	SoundPlay      func(name string, category int, x, y, z float64, volume, pitch float32) error
 	PluginMessage  func(channel string, data []byte) error
 	HeldItemChange func(slot int) error
-
 	WindowsItem       func(id byte, slots []entity.Slot) error
 	WindowsItemChange func(id byte, slotID int, slot entity.Slot) error
-
+	SpawnObj           func(EntityID int, UUID [16]byte, Type int, x, y, z float64, Pitch, Yaw float32, Data int, VelocityX, VelocitY, VelocitZ int16) error
+	EntityRelativeMove func(EntityID, DeltaX, DeltaY, DeltaZ int) error
 	// ReceivePacket will be called when new packet arrive.
 	// Default handler will run only if pass == false.
 	ReceivePacket func(p pk.Packet) (pass bool, err error)
