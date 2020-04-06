@@ -26,8 +26,8 @@ func (c *Client) JoinServer(addr string, port int) (err error) {
 }
 
 // JoinServerWithDialer is similar to JoinServer but using a Dialer.
-func (c *Client) JoinServerWithDialer(d Dialer, addr string) (err error) {
-	conn, err := d.Dial("tcp", addr)
+func (c *Client) JoinServerWithDialer(d Dialer, addr string, port int) (err error) {
+	conn, err := d.Dial("tcp", fmt.Sprintf("%s:%d", addr, port))
 	if err != nil {
 		err = fmt.Errorf("bot: connect server fail: %v", err)
 		return
