@@ -50,7 +50,7 @@ const (
 )
 
 // getBlock return the block in the position (x, y, z)
-func (w *World) getBlock(x, y, z int) Block {
+func (w *World) GetBlock(x, y, z int) Block {
 	c := w.Chunks[ChunkLoc{x >> 4, z >> 4}]
 	if c != nil {
 		cx, cy, cz := x&15, y&15, z&15
