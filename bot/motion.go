@@ -2,6 +2,7 @@ package bot
 
 import (
 	"errors"
+	"math"
 	"strconv"
 
 	"github.com/Tnze/go-mc/data"
@@ -188,4 +189,54 @@ func (c *Client) Disconnect() error {
 // SendPacket send the packet to server.
 func (c *Client) SendPacket(packet pk.Packet) error {
 	return c.conn.WritePacket(packet)
+}
+
+// SetPosition method move your character around.
+// Server will ignore this if changes too much.
+func (c *Client) SetPosition(x, y, z float64, onGround bool) {
+	c.Player.X, c.Player.Y, c.Player.Z = x, y, z
+	c.Player.OnGround = onGround
+	sendPlayerPositionPacket(c)
+}
+
+func sendPlayerPositionPacket(c *Client) error {
+	return c.conn.WritePacket(pk.Marshal(
+		data.PlayerPosition,
+		pk.Double(c.Player.X),
+		pk.Double(c.Player.Y),
+		pk.Double(c.Player.Z),
+		pk.Boolean(c.Player.OnGround),
+	))
+}
+
+// LookAt method turn player's hand and make it look at a point.
+func (c *Client) LookAt(x, y, z float64) {
+	x0, y0, z0 := c.Player.X, c.Player.Y, c.Player.Z
+	x, y, z = x-x0, y-y0, z-z0
+
+	r := math.Sqrt(x*x + y*y + z*z)
+	yaw := -math.Atan2(x, z) / math.Pi * 180
+	for yaw < 0 {
+		yaw = 360 + yaw
+	}
+	pitch := -math.Asin(y/r) / math.Pi * 180
+
+	c.LookYawPitch(float32(yaw), float32(pitch))
+}
+
+// LookYawPitch set player's hand to the direct by yaw and pitch.
+// yaw can be [0, 360) and pitch can be (-180, 180).
+// if |pitch|>90 the player's hand will be very strange.
+func (c *Client) LookYawPitch(yaw, pitch float32) {
+	c.Player.Yaw, c.Player.Pitch = yaw, pitch
+	sendPlayerLookPacket(c)
+}
+
+func sendPlayerLookPacket(c *Client) error {
+	return c.conn.WritePacket(pk.Marshal(
+		data.PlayerLook,
+		pk.Float(c.Player.Yaw),
+		pk.Float(c.Player.Pitch,
+		pk.Boolean(c.Player.OnGround),
+	))
 }
