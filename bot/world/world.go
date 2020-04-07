@@ -2,6 +2,7 @@ package world
 
 import (
 	"github.com/Tnze/go-mc/bot/world/entity"
+	"github.com/Tnze/go-mc/data"
 )
 
 //World record all of the things in the world where player at
@@ -25,51 +26,52 @@ type Block struct {
 	id uint
 }
 
+//ChunkLoc is chunk coords
 type ChunkLoc struct {
 	X, Z int
 }
 
-// //Entity 表示一个实体
-// type Entity interface {
-// 	EntityID() int32
-// }
+//Entity 表示一个实体
+type Entity interface {
+	EntityID() int32
+}
 
-// //Face is a face of a block
-// type Face byte
+//Face is a face of a block
+type Face byte
 
-// // All six faces in a block
-// const (
-// 	Bottom Face = iota
-// 	Top
-// 	North
-// 	South
-// 	West
-// 	East
-// )
+// All six faces in a block
+const (
+	Bottom Face = iota
+	Top
+	North
+	South
+	West
+	East
+)
 
-// // getBlock return the block in the position (x, y, z)
-// func (w *world) getBlock(x, y, z int) Block {
-// 	c := w.chunks[chunkLoc{x >> 4, z >> 4}]
-// 	if c != nil {
-// 		cx, cy, cz := x&15, y&15, z&15
-// 		/*
-// 			n = n&(16-1)
+// getBlock return the block in the position (x, y, z)
+func (w *World) getBlock(x, y, z int) Block {
+	c := w.Chunks[ChunkLoc{x >> 4, z >> 4}]
+	if c != nil {
+		cx, cy, cz := x&15, y&15, z&15
+		/*
+			n = n&(16-1)
 
-// 			is equal to
+			is equal to
 
-// 			n %= 16
-// 			if n < 0 { n += 16 }
-// 		*/
+			n %= 16
+			if n < 0 { n += 16 }
+		*/
 
-// 		return c.sections[y/16].blocks[cx][cy][cz]
-// 	}
+		return c.sections[y/16].blocks[cx][cy][cz]
+	}
 
-// 	return Block{id: 0}
-// }
+	return Block{id: 0}
+}
 
-// func (b Block) String() string {
-// 	return blockNameByID[b.id]
-// }
+func (b Block) String() string {
+	return data.BlockNameByID[b.id]
+}
 
 //LoadChunk load chunk at (x, z)
 func (w *World) LoadChunk(x, z int, c *Chunk) {
