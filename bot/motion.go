@@ -236,7 +236,7 @@ func sendPlayerLookPacket(c *Client) error {
 	return c.conn.WritePacket(pk.Marshal(
 		data.PlayerLook,
 		pk.Float(c.Player.Yaw),
-		pk.Float(c.Player.Pitch,
+		pk.Float(c.Player.Pitch),
 		pk.Boolean(c.Player.OnGround),
 	))
 }
