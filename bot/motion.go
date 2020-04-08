@@ -199,6 +199,24 @@ func (c *Client) SetPosition(x, y, z float64, onGround bool) {
 	sendPlayerPositionPacket(c)
 }
 
+func (c *Client) SetPositionAndLook(x, y, z float64, onGround bool, yaw, pitch float32) {
+	c.Player.X, c.Player.Y, c.Player.Z = x, y, z
+	c.Player.OnGround = onGround
+	c.Player.Yaw, c.Player.Pitch = yaw, pitch
+	sendPlayerPositionAndLook(c)
+}
+func sendPlayerPositionAndLook(c *Client) {
+	c.conn.WritePacket(pk.Marshal(
+		data.PlayerPositionAndLookServerbound,
+		pk.Double(c.X),
+		pk.Double(c.Y),
+		pk.Double(c.Z),
+		pk.Float(c.Yaw),
+		pk.Float(c.Pitch),
+		pk.Boolean(c.OnGround),
+	))
+}
+
 func sendPlayerPositionPacket(c *Client) error {
 	return c.conn.WritePacket(pk.Marshal(
 		data.PlayerPosition,

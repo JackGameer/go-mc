@@ -2,9 +2,10 @@ package packet
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"io"
 	"math"
+
+	"github.com/google/uuid"
 
 	"github.com/Tnze/go-mc/nbt"
 )
@@ -426,4 +427,14 @@ func (u UUID) Encode() []byte {
 func (u *UUID) Decode(r DecodeReader) error {
 	_, err := io.ReadFull(r, (*u)[:])
 	return err
+}
+
+// Decode an Angle
+func (a *Angle) Decode(r DecodeReader) error {
+	v, err := r.ReadByte()
+	if err != nil {
+		return err
+	}
+	*a = Angle(v)
+	return nil
 }
