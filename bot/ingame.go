@@ -117,9 +117,9 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 	case data.ChatMessageClientbound:
 		err = handleChatMessagePacket(c, p)
 	case data.BlockChange:
-		////err = handleBlockChangePacket(c, p)
+		err = handleBlockChangePacket(c, p)
 	case data.MultiBlockChange:
-		////err = handleMultiBlockChangePacket(c, p)
+		err = handleMultiBlockChangePacket(c, p)
 	case data.DisconnectPlay:
 		err = handleDisconnectPacket(c, p)
 		disconnect = true
@@ -240,68 +240,70 @@ func handleSetSlotPacket(c *Client, p pk.Packet) error {
 	return c.Events.WindowsItemChange(byte(windowID), int(slotI), slot)
 }
 
-// func handleMultiBlockChangePacket(c *Client, p pk.Packet) error {
-// 	if !c.settings.ReceiveMap {
-// 		return nil
-// 	}
+func handleMultiBlockChangePacket(c *Client, p pk.Packet) error {
+	if !c.settings.ReceiveMap {
+		return nil
+	}
 
-// 	var cX, cY pk.Int
+	var (
+		cX, cY pk.Int
+		Record pk.ByteArray
+	)
 
-// 	err := p.Scan(&cX, &cY)
-// 	if err != nil {
-// 		return err
-// 	}
+	err := p.Scan(&cX, &cY, &Record)
+	if err != nil {
+		return err
+	}
 
-// 	c := g.wd.chunks[chunkLoc{int(cX), int(cY)}]
-// 	if c != nil {
-// 		RecordCount, err := pk.UnpackVarInt(r)
-// 		if err != nil {
-// 			return err
-// 		}
+	chunk := c.Wd.Chunks[world.ChunkLoc{int(cX), int(cY)}]
+	if chunk != nil {
+		r := bytes.NewReader(Record)
+		for i := int(0); i < len(Record); i++ {
 
-// 		for i := int32(0); i < RecordCount; i++ {
-// 			xz, err := r.ReadByte()
-// 			if err != nil {
-// 				return err
-// 			}
-// 			y, err := r.ReadByte()
-// 			if err != nil {
-// 				return err
-// 			}
-// 			BlockID, err := pk.UnpackVarInt(r)
-// 			if err != nil {
-// 				return err
-// 			}
-// 			x, z := xz>>4, xz&0x0F
+			xz, err := r.ReadByte()
+			if err != nil {
+				return err
+			}
+			y, err := r.ReadByte()
+			if err != nil {
+				return err
+			}
+			var vi pk.VarInt
+			err = vi.Decode(r)
+			if err != nil {
+				return err
+			}
+			x, z := xz>>4, xz&0x0F
+			fmt.Println(vi, x, y, z)
+			chunk.Sections[y/16].Blocks[x][y%16][z] = world.Block{ID: uint(vi)}
+		}
+	}
 
-// 			c.sections[y/16].blocks[x][y%16][z] = Block{id: uint(BlockID)}
-// 		}
-// 	}
+	return nil
+}
 
-// 	return nil
-// }
+func handleBlockChangePacket(c *Client, p pk.Packet) error {
+	if !c.settings.ReceiveMap {
+		return nil
+	}
+	var (
+		pos     pk.Position
+		BlockID pk.VarInt
+	)
+	err := p.Scan(&pos, &BlockID)
+	if err != nil {
+		return err
+	}
+	x := pos.X
+	y := pos.Y
+	z := pos.Z
+	chunk := c.Wd.Chunks[world.ChunkLoc{x >> 4, z >> 4}]
+	if chunk != nil {
+		chunk.Sections[y/16].Blocks[x&15][y&15][z&15] = world.Block{ID: uint(BlockID)}
+	}
 
-// func handleBlockChangePacket(c *Client, p pk.Packet) error {
-// 	if !c.settings.ReceiveMap {
-// 		return nil
-// 	}
-// 	var pos pk.Position
-// 	err := p.Scan(&pos)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	c := g.wd.chunks[chunkLoc{x >> 4, z >> 4}]
-// 	if c != nil {
-// 		id, err := pk.UnpackVarInt(r)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		c.sections[y/16].blocks[x&15][y&15][z&15] = Block{id: uint(id)}
-// 	}
-
-// 	return nil
-// }
+	return nil
+}
 
 func handleChatMessagePacket(c *Client, p pk.Packet) (err error) {
 	var (

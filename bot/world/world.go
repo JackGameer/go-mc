@@ -13,17 +13,17 @@ type World struct {
 
 //Chunk store a 256*16*16 clolumn blocks
 type Chunk struct {
-	sections [16]Section
+	Sections [16]Section
 }
 
 //Section store a 16*16*16 cube blocks
 type Section struct {
-	blocks [16][16][16]Block
+	Blocks [16][16][16]Block
 }
 
 //Block is the base of world
 type Block struct {
-	id uint
+	ID uint
 }
 
 //ChunkLoc is chunk coords
@@ -49,7 +49,7 @@ const (
 	East
 )
 
-// getBlock return the block in the position (x, y, z)
+//getBlock return the block in the position (x, y, z)
 func (w *World) GetBlock(x, y, z int) Block {
 	c := w.Chunks[ChunkLoc{x >> 4, z >> 4}]
 	if c != nil {
@@ -63,14 +63,14 @@ func (w *World) GetBlock(x, y, z int) Block {
 			if n < 0 { n += 16 }
 		*/
 
-		return c.sections[y/16].blocks[cx][cy][cz]
+		return c.Sections[y/16].Blocks[cx][cy][cz]
 	}
 
-	return Block{id: 0}
+	return Block{ID: 0}
 }
 
 func (b Block) String() string {
-	return data.BlockNameByID[b.id]
+	return data.BlockNameByID[b.ID]
 }
 
 //LoadChunk load chunk at (x, z)

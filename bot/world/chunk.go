@@ -3,6 +3,7 @@ package world
 import (
 	"bytes"
 	"fmt"
+
 	// "io"
 	"github.com/Tnze/go-mc/data"
 	pk "github.com/Tnze/go-mc/net/packet"
@@ -58,7 +59,7 @@ func DecodeChunkColumn(mask int32, data []byte) (*Chunk, error) {
 			}
 		}
 		//用数据填充区块
-		fillSection(&c.sections[sectionY], perBits(byte(BitsPerBlock)), DataArray, palette)
+		fillSection(&c.Sections[sectionY], perBits(byte(BitsPerBlock)), DataArray, palette)
 	}
 
 	return &c, nil
@@ -82,15 +83,15 @@ func fillSection(s *Section, bpb uint, DataArray []int64, palette []uint) {
 		data := uint(DataArray[offset/64])
 		data >>= offset % 64
 		if offset%64 > 64-bpb {
-			l := 64 - offset % 64
+			l := 64 - offset%64
 			data |= uint(DataArray[offset/64+1] << l)
 		}
 		data &= mask
 
 		if bpb < 9 {
-			s.blocks[n%16][n/(16*16)][n%(16*16)/16].id = palette[data]
+			s.Blocks[n%16][n/(16*16)][n%(16*16)/16].ID = palette[data]
 		} else {
-			s.blocks[n%16][n/(16*16)][n%(16*16)/16].id = data
+			s.Blocks[n%16][n/(16*16)][n%(16*16)/16].ID = data
 		}
 	}
 }
