@@ -672,10 +672,11 @@ func handleEntityRelativeMove(c *Client, p pk.Packet) error {
 	var (
 		EntityID               pk.VarInt
 		DeltaX, DeltaY, DeltaZ pk.Short
+		OnGround               pk.Boolean
 	)
-	err := p.Scan(&EntityID, &DeltaX, &DeltaY, &DeltaZ)
+	err := p.Scan(&EntityID, &DeltaX, &DeltaY, &DeltaZ, &OnGround)
 	if err != nil {
 		return err
 	}
-	return c.Events.EntityRelativeMove(int(EntityID), int(DeltaX), int(DeltaY), int(DeltaZ))
+	return c.Events.EntityRelativeMove(int(EntityID), int(DeltaX), int(DeltaY), int(DeltaZ), bool(OnGround))
 }
