@@ -644,7 +644,7 @@ func sendPlayerPositionAndLookPacket(c *Client) {
 }
 
 func handleSpawnObjectPacket(c *Client, p pk.Packet) error {
-	if c.Events.SpawnObj == nil {
+	if c.Events.SpawnObject == nil {
 		return nil
 	}
 	var (
@@ -659,7 +659,7 @@ func handleSpawnObjectPacket(c *Client, p pk.Packet) error {
 	if err != nil {
 		return err
 	}
-	return c.Events.SpawnObj(
+	return c.Events.SpawnObject(
 		int(EntityID), [16]byte(UUID), int(Type),
 		float64(x), float64(y), float64(z), float32(Pitch), float32(Yaw), int(Data),
 		int16(VelocityX), int16(VelocityY), int16(VelocityZ))
