@@ -246,11 +246,12 @@ func handleMultiBlockChangePacket(c *Client, p pk.Packet) error {
 	}
 
 	var (
-		cX, cY pk.Int
-		Record pk.ByteArray
+		cX, cY      pk.Int
+		RecordCount pk.VarInt
+		Record      pk.ByteArray
 	)
 
-	err := p.Scan(&cX, &cY, &Record)
+	err := p.Scan(&cX, &cY, &RecordCount, &Record)
 	if err != nil {
 		return err
 	}
@@ -258,7 +259,7 @@ func handleMultiBlockChangePacket(c *Client, p pk.Packet) error {
 	chunk := c.Wd.Chunks[world.ChunkLoc{int(cX), int(cY)}]
 	if chunk != nil {
 		r := bytes.NewReader(Record)
-		for i := int(0); i < len(Record); i++ {
+		for i := int(0); i < int(RecordCount); i++ {
 
 			xz, err := r.ReadByte()
 			if err != nil {
