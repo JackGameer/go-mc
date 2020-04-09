@@ -244,39 +244,44 @@ func handleMultiBlockChangePacket(c *Client, p pk.Packet) error {
 	if !c.settings.ReceiveMap {
 		return nil
 	}
-
+	r := bytes.NewReader(p.Data)
 	var (
-		cX, cY      pk.Int
+		cX, cZ      pk.Int
 		RecordCount pk.VarInt
-		Record      pk.ByteArray
+		XZ, y       pk.UnsignedByte
+		BlockID     pk.VarInt
 	)
-
-	err := p.Scan(&cX, &cY, &RecordCount, &Record)
+	err := cX.Decode(r)
+	if err != nil {
+		return err
+	}
+	err = cZ.Decode(r)
+	if err != nil {
+		return err
+	}
+	err = RecordCount.Decode(r)
 	if err != nil {
 		return err
 	}
 
-	chunk := c.Wd.Chunks[world.ChunkLoc{int(cX), int(cY)}]
-	if chunk != nil {
-		r := bytes.NewReader(Record)
+	chunk := c.Wd.Chunks[world.ChunkLoc{int(cX), int(cZ)}]
+	if chunk != nil && int(RecordCount) != 0 {
 		for i := int(0); i < int(RecordCount); i++ {
 
-			xz, err := r.ReadByte()
+			err := XZ.Decode(r)
 			if err != nil {
 				return err
 			}
-			y, err := r.ReadByte()
+			err = y.Decode(r)
 			if err != nil {
 				return err
 			}
-			var vi pk.VarInt
-			err = vi.Decode(r)
+			err = BlockID.Decode(r)
 			if err != nil {
 				return err
 			}
-			x, z := xz>>4, xz&0x0F
-			fmt.Println(vi, x, y, z)
-			chunk.Sections[y/16].Blocks[x][y%16][z] = world.Block{ID: uint(vi)}
+			x, z := XZ>>4, XZ&0x0F
+			chunk.Sections[y/16].Blocks[x][y%16][z] = world.Block{ID: uint(BlockID)}
 		}
 	}
 
