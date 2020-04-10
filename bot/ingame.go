@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/Tnze/go-mc/bot/world"
 	"github.com/Tnze/go-mc/bot/world/entity"
@@ -37,6 +38,9 @@ func (c *Client) HandleGame() error {
 			//Read packets
 			p, err := c.conn.ReadPacket()
 			if err != nil {
+				if strings.Contains(err.Error(), "read len of packet fail") {
+					continue
+				}
 				return fmt.Errorf("bot: read packet fail: %w", err)
 			}
 			//handle packets
