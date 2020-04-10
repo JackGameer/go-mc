@@ -9,6 +9,8 @@ import (
 //Entity is the entity of minecraft
 type Entity struct {
 	EntityID int //实体ID
+	Type     int
+	X, Y, Z  float64
 }
 
 // The Slot data structure is how Minecraft represents an item and its associated data in the Minecraft Protocol
@@ -40,4 +42,8 @@ func (s *Slot) Decode(r pk.DecodeReader) error {
 
 func (s Slot) String() string {
 	return data.ItemNameByID[s.ItemID]
+}
+
+func (e Entity) String() string {
+	return data.EntityNameByID[e.Type]
 }

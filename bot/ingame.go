@@ -133,12 +133,59 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		err = handleSetExperience(c, p)
 	case data.SpawnObject:
 		err = handleSpawnObjectPacket(c, p)
+	case data.SpawnMob:
+		err = handleSpawnEntitiesPacket(c, p)
+	case data.DestroyEntities:
+		err = handleDestroyEntitiesPacket(c, p)
 	//case data.EntityMetadata:
 	//	err = handleEntityMetadata(c, p)
 	default:
 		// fmt.Printf("ignore pack id %X\n", p.ID)
 	}
 	return
+}
+
+func handleSpawnEntitiesPacket(c *Client, p pk.Packet) error {
+	if c.Events.SpawnEntity == nil {
+		return nil
+	}
+	var (
+		entityID                        pk.VarInt
+		UUID                            pk.UUID
+		mobType                         pk.VarInt
+		x, y, z                         pk.Double
+		yaw, pitch, headPitch           pk.Angle
+		velocityX, velocityY, velocityZ pk.Short
+	)
+	err := p.Scan(&entityID, &UUID, &mobType, &x, &y, &z, &yaw, &pitch, &headPitch, &velocityX, &velocityY, &velocityZ)
+	if err != nil {
+		return err
+	}
+	return c.Events.SpawnEntity(int(entityID), UUID, int(mobType),
+		float64(x), float64(y), float64(z), int8(yaw), int8(pitch), int8(headPitch),
+		int16(velocityX), int16(velocityY), int16(velocityZ))
+}
+
+func handleDestroyEntitiesPacket(c *Client, p pk.Packet) error {
+	if c.Events.DestroyEntities == nil {
+		return nil
+	}
+	var (
+		count     pk.VarInt
+		entityIDs []int
+	)
+	r := bytes.NewReader(p.Data)
+	if err := count.Decode(r); err != nil {
+		return err
+	}
+	for i := 0; i < int(count); i++ {
+		var entityID pk.VarInt
+		if err := entityID.Decode(r); err != nil {
+			return err
+		}
+		entityIDs = append(entityIDs, int(entityID))
+	}
+	return c.Events.DestroyEntities(entityIDs)
 }
 
 func handleSetExperience(c *Client, p pk.Packet) error {
