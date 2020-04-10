@@ -22,7 +22,7 @@ func (c *Client) JoinServer(addr string, port int) (err error) {
 		err = fmt.Errorf("bot: connect server fail: %v", err)
 		return
 	}
-	return c.join(conn)
+	return c.join(conn, addr, port)
 }
 
 // JoinServerWithDialer is similar to JoinServer but using a Dialer.
@@ -32,19 +32,13 @@ func (c *Client) JoinServerWithDialer(d Dialer, addr string, port int) (err erro
 		err = fmt.Errorf("bot: connect server fail: %v", err)
 		return
 	}
-	return c.join(conn)
+	return c.join(conn, addr, port)
 }
 
 // JoinConn join a Minecraft server through a connection for playing the game.
-func (c *Client) join(conn net.Conn) (err error) {
+func (c *Client) join(conn net.Conn, addr string, port int) (err error) {
 	//Set Conn
 	c.conn = mcnet.WrapConn(conn)
-
-	//Get Addr
-	strform := c.conn.Socket.RemoteAddr().String()
-	var addr string
-	var port int
-	fmt.Sscanf(strform, "%s:%d", &addr, &port)
 
 	//Handshake
 	err = c.conn.WritePacket(
