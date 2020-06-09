@@ -148,6 +148,22 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 	}
 	return
 }
+func handleSpawnPlayerPacket(c *Client, p pk.Packet) error {
+	if c.Events.SpawnPlayer == nil {
+		return nil
+	}
+	var (
+		entityID   pk.VarInt
+		UUID       pk.UUID
+		x, y, z    pk.Double
+		yaw, pitch pk.Angle
+	)
+	err := p.Scan(&entityID, &UUID, &x, &y, &z, &yaw, &pitch)
+	if err != nil {
+		return err
+	}
+	return c.Events.SpawnPlayer(int(entityID), UUID, float64(x), float64(y), float64(y), int8(yaw), int8(pitch))
+}
 
 func handleSpawnEntitiesPacket(c *Client, p pk.Packet) error {
 	if c.Events.SpawnEntity == nil {

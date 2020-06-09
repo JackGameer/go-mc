@@ -23,6 +23,7 @@ type eventBroker struct {
 	SpawnEntity        func(entityID int, UUID pk.UUID, mobType int, x, y, z float64, yaw, pitch, headPitch int8, velocityX, velocitY, velocityZ int16) error
 	DestroyEntities    func(entityIDs []int) error
 	EntityRelativeMove func(EntityID, DeltaX, DeltaY, DeltaZ int, onGround bool) error
+	SpawnPlayer        func(entityID int, UUID pk.UUID, x, y, z float64, yaw, pitch int8) error
 	// ReceivePacket will be called when new packet arrive.
 	// Default handler will run only if pass == false.
 	ReceivePacket func(p pk.Packet) (pass bool, err error)
