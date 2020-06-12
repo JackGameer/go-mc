@@ -160,7 +160,7 @@ func handleSpawnPlayerPacket(c *Client, p pk.Packet) error {
 		return err
 	}
 	if c.Events.SpawnPlayer != nil {
-		return c.Events.SpawnPlayer(int(entityID), UUID, float64(x), float64(y), float64(y), int8(yaw), int8(pitch))
+		return c.Events.SpawnPlayer(int(entityID), UUID, float64(x), float64(y), float64(z), int8(yaw), int8(pitch))
 	}
 	return nil
 }
