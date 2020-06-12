@@ -746,7 +746,7 @@ func handleEntityRelativeMove(c *Client, p pk.Packet) error {
 		return err
 	}
 	if c.Events.EntityRelativeMove != nil {
-		return c.Events.EntityRelativeMove(int(EntityID), int(DeltaX), int(DeltaY), int(DeltaZ), bool(OnGround))
+		return c.Events.EntityRelativeMove(int(EntityID), int16(DeltaX), int16(DeltaY), int16(DeltaZ), bool(OnGround))
 	}
 	return nil
 }
