@@ -113,7 +113,7 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 	case data.Entity:
 		//handleEntityPacket(g, reader)
 	case data.SpawnPlayer:
-		// err = handleSpawnPlayerPacket(g, reader)
+		err = handleSpawnPlayerPacket(c, p)
 	case data.WindowItems:
 		err = handleWindowItemsPacket(c, p)
 	case data.UpdateHealth:
@@ -149,9 +149,6 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 	return
 }
 func handleSpawnPlayerPacket(c *Client, p pk.Packet) error {
-	if c.Events.SpawnPlayer == nil {
-		return nil
-	}
 	var (
 		entityID   pk.VarInt
 		UUID       pk.UUID
@@ -162,13 +159,13 @@ func handleSpawnPlayerPacket(c *Client, p pk.Packet) error {
 	if err != nil {
 		return err
 	}
-	return c.Events.SpawnPlayer(int(entityID), UUID, float64(x), float64(y), float64(y), int8(yaw), int8(pitch))
+	if c.Events.SpawnPlayer != nil {
+		return c.Events.SpawnPlayer(int(entityID), UUID, float64(x), float64(y), float64(y), int8(yaw), int8(pitch))
+	}
+	return nil
 }
 
 func handleSpawnEntitiesPacket(c *Client, p pk.Packet) error {
-	if c.Events.SpawnEntity == nil {
-		return nil
-	}
 	var (
 		entityID                        pk.VarInt
 		UUID                            pk.UUID
@@ -181,15 +178,15 @@ func handleSpawnEntitiesPacket(c *Client, p pk.Packet) error {
 	if err != nil {
 		return err
 	}
-	return c.Events.SpawnEntity(int(entityID), UUID, int(mobType),
-		float64(x), float64(y), float64(z), int8(yaw), int8(pitch), int8(headPitch),
-		int16(velocityX), int16(velocityY), int16(velocityZ))
+	if c.Events.SpawnEntity != nil {
+		return c.Events.SpawnEntity(int(entityID), UUID, int(mobType),
+			float64(x), float64(y), float64(z), int8(yaw), int8(pitch), int8(headPitch),
+			int16(velocityX), int16(velocityY), int16(velocityZ))
+	}
+	return nil
 }
 
 func handleDestroyEntitiesPacket(c *Client, p pk.Packet) error {
-	if c.Events.DestroyEntities == nil {
-		return nil
-	}
 	var (
 		count     pk.VarInt
 		entityIDs []int
@@ -205,7 +202,10 @@ func handleDestroyEntitiesPacket(c *Client, p pk.Packet) error {
 		}
 		entityIDs = append(entityIDs, int(entityID))
 	}
-	return c.Events.DestroyEntities(entityIDs)
+	if c.Events.DestroyEntities != nil {
+		return c.Events.DestroyEntities(entityIDs)
+	}
+	return nil
 }
 
 func handleSetExperience(c *Client, p pk.Packet) error {
@@ -292,9 +292,6 @@ func handleDisconnectPacket(c *Client, p pk.Packet) error {
 }
 
 func handleSetSlotPacket(c *Client, p pk.Packet) error {
-	if c.Events.WindowsItemChange == nil {
-		return nil
-	}
 	var (
 		windowID pk.Byte
 		slotI    pk.Short
@@ -303,8 +300,10 @@ func handleSetSlotPacket(c *Client, p pk.Packet) error {
 	if err := p.Scan(&windowID, &slotI, &slot); err != nil && !errors.Is(err, nbt.ErrEND) {
 		return err
 	}
-
-	return c.Events.WindowsItemChange(byte(windowID), int(slotI), slot)
+	if c.Events.WindowsItemChange != nil {
+		return c.Events.WindowsItemChange(byte(windowID), int(slotI), slot)
+	}
+	return nil
 }
 
 func handleMultiBlockChangePacket(c *Client, p pk.Packet) error {
@@ -677,10 +676,6 @@ func handleKeepAlivePacket(c *Client, p pk.Packet) error {
 }
 
 func handleWindowItemsPacket(c *Client, p pk.Packet) (err error) {
-	if c.Events.WindowsItem == nil {
-		return nil
-	}
-
 	r := bytes.NewReader(p.Data)
 	var (
 		windowID pk.Byte
@@ -700,8 +695,10 @@ func handleWindowItemsPacket(c *Client, p pk.Packet) (err error) {
 		}
 		slots = append(slots, slot)
 	}
-
-	return c.Events.WindowsItem(byte(windowID), slots)
+	if c.Events.WindowsItem != nil {
+		return c.Events.WindowsItem(byte(windowID), slots)
+	}
+	return nil
 }
 
 func sendPlayerPositionAndLookPacket(c *Client) {
@@ -717,31 +714,28 @@ func sendPlayerPositionAndLookPacket(c *Client) {
 }
 
 func handleSpawnObjectPacket(c *Client, p pk.Packet) error {
-	if c.Events.SpawnObject == nil {
-		return nil
-	}
 	var (
 		EntityID, Type                  pk.VarInt
 		UUID                            pk.UUID
 		x, y, z                         pk.Double
-		Yaw, Pitch                      pk.Byte
-		VelocityX, VelocityY, VelocityZ pk.Short
+		Yaw, Pitch                      pk.Angle
 		Data                            pk.Int
+		VelocityX, VelocityY, VelocityZ pk.Short
 	)
 	err := p.Scan(&EntityID, &UUID, &Type, &x, &y, &z, &Pitch, &Yaw, &Data, &VelocityX, &VelocityY, &VelocityZ)
 	if err != nil {
 		return err
 	}
-	return c.Events.SpawnObject(
-		int(EntityID), [16]byte(UUID), int(Type),
-		float64(x), float64(y), float64(z), float32(Pitch), float32(Yaw), int(Data),
-		int16(VelocityX), int16(VelocityY), int16(VelocityZ))
+	if c.Events.SpawnObject != nil {
+		return c.Events.SpawnObject(
+			int(EntityID), UUID, int(Type),
+			float64(x), float64(y), float64(z), float32(Pitch), float32(Yaw), int(Data),
+			int16(VelocityX), int16(VelocityY), int16(VelocityZ))
+	}
+	return nil
 }
 
 func handleEntityRelativeMove(c *Client, p pk.Packet) error {
-	if c.Events.EntityRelativeMove == nil {
-		return nil
-	}
 	var (
 		EntityID               pk.VarInt
 		DeltaX, DeltaY, DeltaZ pk.Short
@@ -751,5 +745,8 @@ func handleEntityRelativeMove(c *Client, p pk.Packet) error {
 	if err != nil {
 		return err
 	}
-	return c.Events.EntityRelativeMove(int(EntityID), int(DeltaX), int(DeltaY), int(DeltaZ), bool(OnGround))
+	if c.Events.EntityRelativeMove != nil {
+		return c.Events.EntityRelativeMove(int(EntityID), int(DeltaX), int(DeltaY), int(DeltaZ), bool(OnGround))
+	}
+	return nil
 }
