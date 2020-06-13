@@ -141,6 +141,8 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		err = handleSpawnEntitiesPacket(c, p)
 	case data.DestroyEntities:
 		err = handleDestroyEntitiesPacket(c, p)
+	case data.ConfirmTransaction:
+		err = confirmTransaction(c, p)
 	//case data.EntityMetadata:
 	//	err = handleEntityMetadata(c, p)
 	default:
@@ -148,6 +150,28 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 	}
 	return
 }
+
+func confirmTransaction(c *Client, p pk.Packet) error {
+	var (
+		windowID pk.Byte
+		action   pk.Short
+		accepted pk.Boolean
+	)
+	err := p.Scan(&windowID, &action, &accepted)
+	if err != nil {
+		return err
+	}
+	if !accepted {
+		c.conn.WritePacket(pk.Marshal(
+			data.ConfirmTransactionServerbound,
+			windowID,
+			action,
+			accepted,
+		))
+	}
+	return nil
+}
+
 func handleSpawnPlayerPacket(c *Client, p pk.Packet) error {
 	var (
 		entityID   pk.VarInt
