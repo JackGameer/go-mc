@@ -17,6 +17,16 @@ func (a *Access) Validate() (bool, error) {
 	return resp.StatusCode == 204, resp.Body.Close()
 }
 
+// Validate checks if an accessToken is usable for authentication with a Minecraft server.
+func (t *Tokens) Validate() (bool, error) {
+	resp, err := rawPost("/validate", t)
+	if err != nil {
+		return false, fmt.Errorf("request fail: %v", err)
+	}
+
+	return resp.StatusCode == 204, resp.Body.Close()
+}
+
 // Invalidate invalidates accessTokens using a client/access token pair.
 func (a *Access) Invalidate() error {
 	pl := a.ar.Tokens
