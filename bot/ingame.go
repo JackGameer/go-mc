@@ -106,7 +106,7 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		err = handleEntityRelativeMove(c, p)
 	case data.EntityLookAndRelativeMove:
 		err = handleEntityLookRelativeMove(c, p)
-	case data.EntityHeadLook:
+	case data.EntityLook:
 		err = handleEntityLook(c, p)
 	case data.KeepAliveClientbound:
 		err = handleKeepAlivePacket(c, p)
