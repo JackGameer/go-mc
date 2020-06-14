@@ -102,12 +102,12 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		sendPlayerPositionAndLookPacket(c) // to confirm the position
 	case data.DeclareRecipes:
 		// handleDeclareRecipesPacket(g, reader)
-	case data.EntityLookAndRelativeMove:
-		err = handleEntityRelativeMove(c, p)
-	//case data.EntityHeadLook:
-	//	err = handleEntityRelativeMove(c, p)
 	case data.EntityRelativeMove:
 		err = handleEntityRelativeMove(c, p)
+	case data.EntityLookAndRelativeMove:
+		err = handleEntityLookRelativeMove(c, p)
+	case data.EntityHeadLook:
+		err = handleEntityLook(c, p)
 	case data.KeepAliveClientbound:
 		err = handleKeepAlivePacket(c, p)
 	case data.Entity:
@@ -771,6 +771,41 @@ func handleEntityRelativeMove(c *Client, p pk.Packet) error {
 	}
 	if c.Events.EntityRelativeMove != nil {
 		return c.Events.EntityRelativeMove(int(EntityID), int16(DeltaX), int16(DeltaY), int16(DeltaZ), bool(OnGround))
+	}
+	return nil
+}
+
+func handleEntityLookRelativeMove(c *Client, p pk.Packet) error {
+	var (
+		EntityID               pk.VarInt
+		DeltaX, DeltaY, DeltaZ pk.Short
+		Yaw, Pitch             pk.Angle
+		OnGround               pk.Boolean
+	)
+	err := p.Scan(&EntityID, &DeltaX, &DeltaY, &DeltaZ, &Yaw, &Pitch, &OnGround)
+	if err != nil {
+		return err
+	}
+
+	if c.Events.EntityLookRelativeMove != nil {
+		return c.Events.EntityLookRelativeMove(int(EntityID), int16(DeltaX), int16(DeltaY), int16(DeltaZ), int8(Yaw), int8(Pitch), bool(OnGround))
+	}
+	return nil
+}
+
+func handleEntityLook(c *Client, p pk.Packet) error {
+	var (
+		EntityID   pk.VarInt
+		Yaw, Pitch pk.Angle
+		OnGround   pk.Boolean
+	)
+	err := p.Scan(&EntityID, &Yaw, &Pitch, &OnGround)
+	if err != nil {
+		return err
+	}
+
+	if c.Events.EntityLookRelativeMove != nil {
+		return c.Events.EntityLook(int(EntityID), int8(Yaw), int8(Pitch), bool(OnGround))
 	}
 	return nil
 }
