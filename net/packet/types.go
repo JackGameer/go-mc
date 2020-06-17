@@ -1,6 +1,7 @@
 package packet
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"math"
@@ -400,6 +401,13 @@ func (d *Double) Decode(r DecodeReader) error {
 // Decode a NBT
 func (n NBT) Decode(r DecodeReader) error {
 	return nbt.NewDecoder(r).Decode(n.V)
+}
+
+// Encode a NBT
+func (n NBT) Encode() []byte {
+	var buf bytes.Buffer
+	nbt.NewEncoder(&buf).Encode(n.V)
+	return buf.Bytes()
 }
 
 // Encode a ByteArray
