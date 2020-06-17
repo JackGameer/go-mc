@@ -143,12 +143,27 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		err = handleDestroyEntitiesPacket(c, p)
 	case data.ConfirmTransaction:
 		err = confirmTransaction(c, p)
+	case data.CloseWindow:
+		err = closeWindow(c, p)
 	//case data.EntityMetadata:
 	//	err = handleEntityMetadata(c, p)
 	default:
 		// fmt.Printf("ignore pack id %X\n", p.ID)
 	}
 	return
+}
+func closeWindow(c *Client, p pk.Packet) error {
+	var (
+		windowID pk.Byte
+	)
+	err := p.Scan(&windowID)
+	if err != nil {
+		return err
+	}
+	if c.Events.WindowClose != nil {
+		return c.Events.WindowClose(byte(windowID))
+	}
+	return nil
 }
 
 func confirmTransaction(c *Client, p pk.Packet) error {
