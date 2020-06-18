@@ -145,6 +145,8 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		err = confirmTransaction(c, p)
 	case data.CloseWindow:
 		err = closeWindow(c, p)
+	case data.OpenWindow:
+		err = handleOpenWindowPacket(c, p)
 	//case data.EntityMetadata:
 	//	err = handleEntityMetadata(c, p)
 	default:
@@ -152,6 +154,22 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 	}
 	return
 }
+
+func handleOpenWindowPacket(c *Client, p pk.Packet) error {
+	var (
+		id, windowType pk.VarInt
+		name           chat.Message
+	)
+	err := p.Scan(&id, &windowType, &name)
+	if err != nil {
+		return err
+	}
+	if c.Events.OpenWindow != nil {
+		return c.Events.OpenWindow(int(id), int(windowType), name)
+	}
+	return nil
+}
+
 func closeWindow(c *Client, p pk.Packet) error {
 	var (
 		windowID pk.Byte
