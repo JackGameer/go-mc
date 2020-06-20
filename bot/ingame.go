@@ -147,12 +147,31 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		err = closeWindow(c, p)
 	case data.OpenWindow:
 		err = handleOpenWindowPacket(c, p)
+	case data.EntityTeleport:
+		err = handleEntityTeleportPacket(c, p)
 	//case data.EntityMetadata:
 	//	err = handleEntityMetadata(c, p)
 	default:
 		// fmt.Printf("ignore pack id %X\n", p.ID)
 	}
 	return
+}
+
+func handleEntityTeleportPacket(c *Client, p pk.Packet) error {
+	var (
+		entityID   pk.VarInt
+		x, y, z    pk.Double
+		yaw, pitch pk.Angle
+		onGround   pk.Boolean
+	)
+	err := p.Scan(&entityID, &x, &y, &z, &yaw, &pitch, &onGround)
+	if err != nil {
+		return err
+	}
+	if c.Events.EntityTeleport != nil {
+		return c.Events.EntityTeleport(int(entityID), float64(x), float64(y), float64(z), int8(yaw), int8(pitch), bool(onGround))
+	}
+	return nil
 }
 
 func handleOpenWindowPacket(c *Client, p pk.Packet) error {
