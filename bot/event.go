@@ -24,6 +24,7 @@ type eventBroker struct {
 	SpawnObject            func(entityID int, UUID pk.UUID, mobType int, x, y, z float64, pitch, yaw float32, data int, velocityX, velocitY, velocityZ int16) error
 	SpawnEntity            func(entityID int, UUID pk.UUID, mobType int, x, y, z float64, yaw, pitch, headPitch int8, velocityX, velocitY, velocityZ int16) error
 	DestroyEntities        func(entityIDs []int) error
+	EntityTeleport         func(entityID int, x, y, z float64, pitch, yaw int8, onGround bool) error
 	EntityRelativeMove     func(EntityID int, DeltaX, DeltaY, DeltaZ int16, onGround bool) error
 	EntityLookRelativeMove func(EntityID int, DeltaX, DeltaY, DeltaZ int16, yaw, pitch int8, onGround bool) error
 	EntityLook             func(EntityID int, yaw, pitch int8, onGround bool) error
