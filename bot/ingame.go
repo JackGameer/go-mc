@@ -168,12 +168,21 @@ func handleScoreboardObjective(c *Client, p pk.Packet) error {
 		value   pk.Chat
 		objType pk.VarInt
 	)
-	err := p.Scan(&name, &mode)
+	r := bytes.NewReader(p.Data)
+	err := name.Decode(r)
+	if err != nil {
+		return err
+	}
+	err = mode.Decode(r)
 	if err != nil {
 		return err
 	}
 	if int(mode) != 1 {
-		err := p.Scan(&value, &objType)
+		err = value.Decode(r)
+		if err != nil {
+			return err
+		}
+		err = objType.Decode(r)
 		if err != nil {
 			return err
 		}
