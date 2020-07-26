@@ -165,7 +165,7 @@ func handleScoreboardObjective(c *Client, p pk.Packet) error {
 	var (
 		name    pk.String
 		mode    pk.Byte
-		value   pk.Chat
+		value   chat.Message
 		objType pk.VarInt
 	)
 	r := bytes.NewReader(p.Data)

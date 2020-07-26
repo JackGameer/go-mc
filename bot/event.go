@@ -30,7 +30,7 @@ type eventBroker struct {
 	EntityLook             func(EntityID int, yaw, pitch int8, onGround bool) error
 	SpawnPlayer            func(entityID int, UUID pk.UUID, x, y, z float64, yaw, pitch int8) error
 	DisplayScoreboard      func(position int, name string) error
-	ScoreboardObjective    func(name string, mode int, value pk.Chat, objType int) error
+	ScoreboardObjective    func(name string, mode int, value chat.Message, objType int) error
 	// ReceivePacket will be called when new packet arrive.
 	// Default handler will run only if pass == false.
 	ReceivePacket func(p pk.Packet) (pass bool, err error)
