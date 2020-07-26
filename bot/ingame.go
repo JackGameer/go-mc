@@ -149,12 +149,54 @@ func (c *Client) handlePacket(p pk.Packet) (disconnect bool, err error) {
 		err = handleOpenWindowPacket(c, p)
 	case data.EntityTeleport:
 		err = handleEntityTeleportPacket(c, p)
+	case data.DisplayScoreboard:
+		err = handleDisplayScoreboard(c, p)
+	case data.ScoreboardObjective:
+		err = handleScoreboardObjective(c, p)
+
 	//case data.EntityMetadata:
 	//	err = handleEntityMetadata(c, p)
 	default:
 		// fmt.Printf("ignore pack id %X\n", p.ID)
 	}
 	return
+}
+func handleScoreboardObjective(c *Client, p pk.Packet) error {
+	var (
+		name    pk.String
+		mode    pk.Byte
+		value   pk.Chat
+		objType pk.VarInt
+	)
+	err := p.Scan(&name, &mode)
+	if err != nil {
+		return err
+	}
+	if int(mode) != 1 {
+		err := p.Scan(&value, &objType)
+		if err != nil {
+			return err
+		}
+	}
+	if c.Events.ScoreboardObjective != nil {
+		return c.Events.ScoreboardObjective(string(name), int(mode), value, int(objType))
+	}
+	return nil
+}
+
+func handleDisplayScoreboard(c *Client, p pk.Packet) error {
+	var (
+		position pk.Byte
+		name     pk.String
+	)
+	err := p.Scan(&position, &name)
+	if err != nil {
+		return err
+	}
+	if c.Events.DisplayScoreboard != nil {
+		return c.Events.DisplayScoreboard(int(position), string(name))
+	}
+	return nil
 }
 
 func handleEntityTeleportPacket(c *Client, p pk.Packet) error {
