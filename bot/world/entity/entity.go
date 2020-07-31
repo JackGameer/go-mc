@@ -1,7 +1,10 @@
 package entity
 
 import (
+	"strings"
+
 	"github.com/Tnze/go-mc/data"
+	en_us "github.com/Tnze/go-mc/data/lang/en-us"
 	"github.com/Tnze/go-mc/nbt"
 	pk "github.com/Tnze/go-mc/net/packet"
 )
@@ -42,6 +45,20 @@ func (s *Slot) Decode(r pk.DecodeReader) error {
 
 func (s Slot) String() string {
 	return data.ItemNameByID[s.ItemID]
+}
+
+//Name returns translated name
+func (s Slot) Name() string {
+	key := strings.Split(s.String(), ":")
+	id := key[0] + "." + key[1]
+	translation, ok := en_us.Map["item."+id]
+	if !ok {
+		translation, ok = en_us.Map["block."+id]
+		if !ok {
+			return id
+		}
+	}
+	return translation
 }
 
 func (e Entity) String() string {
