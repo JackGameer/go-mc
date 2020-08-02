@@ -474,10 +474,9 @@ func handleMultiBlockChangePacket(c *Client, p pk.Packet) error {
 				return err
 			}
 			x, z := XZ>>4, XZ&0x0F
-			chunk.Sections[y/16].SetBlock(world.SectionOffset(int(x), int(y%16), int(z)), world.BlockStatus(BlockID))
+			chunk.Sections[y/16].Blocks[x][y%16][z] = world.Block{ID: uint(BlockID)}
 		}
 	}
-
 	return nil
 }
 
@@ -498,7 +497,7 @@ func handleBlockChangePacket(c *Client, p pk.Packet) error {
 	z := pos.Z
 	chunk := c.Wd.Chunks[world.ChunkLoc{x >> 4, z >> 4}]
 	if chunk != nil {
-		chunk.Sections[y/16].SetBlock(world.SectionOffset(int(x&15), int(y&15), int(z&15)), world.BlockStatus(BlockID))
+		chunk.Sections[y/16].Blocks[x&15][y&15][z&15] = world.Block{ID: uint(BlockID)}
 	}
 
 	return nil
